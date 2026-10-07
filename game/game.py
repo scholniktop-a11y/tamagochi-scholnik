@@ -144,12 +144,12 @@ class SimpleGame(AbstractGame):
 
     def work(self) -> int:
         """
-        Пойти на работу — кликнуть и забрать монеты.
+        Пойти на работу — кликнуть и получить монеты.
 
         :return: Сколько монет заработано за клик.
         """
         self.clicker.click()
-        income = self.clicker.take_all_coins()
+        income = self.clicker.income_per_click
         self._coins += income
         self.tamagochi.update()
         self._check_state()

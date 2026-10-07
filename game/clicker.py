@@ -25,27 +25,18 @@ class AbstractClicker(ABC):
 
 
 class SimpleRandomClicker(AbstractClicker):
-    """Кликер, накапливающий монеты за клик."""
+    """Кликер с фиксированной случайной ставкой за клик."""
 
     def __init__(self) -> None:
-        """Инициализирует кликер с нулевым балансом."""
-        self._income = 0
+        """Инициализирует кликер со случайной ставкой за клик."""
+        self._income_per_click = randint(5, 15)
+        self.clicks_count = 0
 
     @property
     def income_per_click(self) -> int:
-        """Количество накопленных монет."""
-        return self._income
+        """Количество монет за один клик."""
+        return self._income_per_click
 
     def click(self) -> None:
-        """Накапливает случайное количество монет за клик."""
-        self._income += randint(5, 15)
-
-    def take_all_coins(self) -> int:
-        """
-        Забирает все накопленные монеты и обнуляет счётчик.
-
-        :return: Количество монет.
-        """
-        coins = self._income
-        self._income = 0
-        return coins
+        """Фиксирует клик игрока."""
+        self.clicks_count += 1
