@@ -97,7 +97,7 @@ class SimpleTamagochi(AbstractTamagochi):
         self.hunger = 50
         self.hp = 100
         self.energy = 50
-        self.fatigue = 0
+        self.fatigue = 20
         self._sick = False
 
     def feed(self, food: Food) -> None:
@@ -109,13 +109,13 @@ class SimpleTamagochi(AbstractTamagochi):
         self.hunger = max(0, self.hunger - food.satiety)
 
     def play(self) -> None:
-        """Играет с питомцем: тратит энергию, снижает усталость."""
+        """Играет с питомцем: тратит энергию, увеличивает усталость."""
         self.energy = max(0, self.energy - 10)
-        self.fatigue = max(0, self.fatigue - 10)
+        self.fatigue = min(100, self.fatigue + 10)
         self.hunger = min(100, self.hunger + 5)
 
     def rest(self) -> None:
-        """Питомец отдыхает: восстанавливает энергию."""
+        """Питомец отдыхает: восстанавливает энергию, снижает усталость."""
         if self._sick:
             self.energy = min(100, self.energy + 10)
             self.fatigue = max(0, self.fatigue - 5)

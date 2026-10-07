@@ -54,6 +54,7 @@ def main() -> None:
             f"\nСтатус: голод {status['hunger']}, "
             f"здоровье {status['hp']}, "
             f"энергия {status['energy']}, "
+            f"усталость {status['fatigue']}, "
             f"монет {status['coins']}\n"
         )
 
