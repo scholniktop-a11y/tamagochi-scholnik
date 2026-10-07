@@ -143,7 +143,7 @@ class SimpleGame(AbstractGame):
         :return: Сколько монет заработано за клик.
         """
         self.clicker.click()
-        income = self.clicker.income_per_click
+        income = self.clicker.take_all_coins()
         self._coins += income
         self.tamagochi.update()
         self._check_state()
@@ -162,6 +162,8 @@ class SimpleGame(AbstractGame):
             raise NotEnoughMoney('Недостаточно монет для покупки еды')
         self._coins -= food.price
         self._food_bag.append(food)
+        self.tamagochi.update()
+        self._check_state()
 
     def buy_medicine(self) -> None:
         """
@@ -178,6 +180,8 @@ class SimpleGame(AbstractGame):
             )
         self._coins -= medicine.price
         self._medicine_bag.append(medicine)
+        self.tamagochi.update()
+        self._check_state()
 
     def feed_tamagochi(self) -> None:
         """Покормить питомца первой едой из сумки."""
@@ -189,18 +193,18 @@ class SimpleGame(AbstractGame):
         self._check_state()
 
     def heal_tamagochi(self) -> None:
-        """Вылечить питомца первым лекарством из сумки."""
-        if not self._medicine_bag:
+        """Вылечить питомца первым непустым лекарством из сумки."""
+        while self._medicine_bag:
+            medicine = self._medicine_bag[0]
+            if medicine.is_empty():
+                self._medicine_bag.pop(0)
+                continue
+            self.tamagochi.heal(medicine)
+            if medicine.is_empty():
+                self._medicine_bag.pop(0)
+            self.tamagochi.update()
+            self._check_state()
             return
-        medicine = self._medicine_bag[0]
-        if medicine.is_empty():
-            self._medicine_bag.pop(0)
-            return
-        self.tamagochi.heal(medicine)
-        if medicine.is_empty():
-            self._medicine_bag.pop(0)
-        self.tamagochi.update()
-        self._check_state()
 
     def rest_tamagochi(self) -> None:
         """Дать питомцу отдохнуть."""

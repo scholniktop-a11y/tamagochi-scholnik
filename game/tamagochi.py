@@ -146,16 +146,16 @@ class SimpleTamagochi(AbstractTamagochi):
         }
 
     def is_alive(self) -> bool:
-        """Питомец жив?"""
+        """Проверяет, жив ли питомец."""
         return self.hp > 0
 
     def is_sick(self) -> bool:
-        """Питомец болен?"""
+        """Проверяет, болен ли питомец."""
         return self._sick
 
     def is_happy(self) -> bool:
         """
-        Питомец полностью счастлив?
+        Проверяет, полностью ли счастлив питомец.
 
         :return: True если все показатели в норме.
         """
