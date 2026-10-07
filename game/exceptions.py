@@ -11,3 +11,11 @@ class NotEnoughMoney(Exception):
 
 class GameWin(Exception):
     """Игрок выиграл."""
+
+
+class NoFoodError(Exception):
+    """Ошибка когда в сумке нет еды."""
+
+
+class NoMedicineError(Exception):
+    """Ошибка когда в сумке нет лекарств."""

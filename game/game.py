@@ -3,7 +3,13 @@
 from abc import ABC, abstractmethod
 
 from .clicker import AbstractClicker
-from .exceptions import GameWin, NotEnoughMoney, TamagochiIsGone
+from .exceptions import (
+    GameWin,
+    NoFoodError,
+    NoMedicineError,
+    NotEnoughMoney,
+    TamagochiIsGone,
+)
 from .models import Food, Medicine
 from .tamagochi import AbstractTamagochi
 
@@ -184,27 +190,37 @@ class SimpleGame(AbstractGame):
         self._check_state()
 
     def feed_tamagochi(self) -> None:
-        """Покормить питомца первой едой из сумки."""
+        """
+        Покормить питомца первой едой из сумки.
+
+        :raises NoFoodError: если в сумке нет еды
+        """
         if not self._food_bag:
-            return
+            raise NoFoodError('Кормить нечем — сумка с едой пуста')
         food = self._food_bag.pop(0)
         self.tamagochi.feed(food)
         self.tamagochi.update()
         self._check_state()
 
     def heal_tamagochi(self) -> None:
-        """Вылечить питомца первым непустым лекарством из сумки."""
-        while self._medicine_bag:
-            medicine = self._medicine_bag[0]
-            if medicine.is_empty():
-                self._medicine_bag.pop(0)
-                continue
-            self.tamagochi.heal(medicine)
-            if medicine.is_empty():
-                self._medicine_bag.pop(0)
-            self.tamagochi.update()
-            self._check_state()
-            return
+        """
+        Вылечить питомца первым непустым лекарством из сумки.
+
+        :raises NoMedicineError: если в сумке нет лекарств
+        """
+        if not self._medicine_bag:
+            raise NoMedicineError(
+                'Лечить нечем — сумка с лекарствами пуста'
+            )
+        medicine = self._medicine_bag[0]
+        if medicine.is_empty():
+            self._medicine_bag.pop(0)
+            raise NoMedicineError('Лекарство закончилось')
+        self.tamagochi.heal(medicine)
+        if medicine.is_empty():
+            self._medicine_bag.pop(0)
+        self.tamagochi.update()
+        self._check_state()
 
     def rest_tamagochi(self) -> None:
         """Дать питомцу отдохнуть."""

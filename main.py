@@ -3,7 +3,13 @@
 import os
 
 from game.clicker import SimpleRandomClicker
-from game.exceptions import GameWin, NotEnoughMoney, TamagochiIsGone
+from game.exceptions import (
+    GameWin,
+    NoFoodError,
+    NoMedicineError,
+    NotEnoughMoney,
+    TamagochiIsGone,
+)
 from game.game import SimpleGame
 from game.models import Food, Medicine
 from game.tamagochi import SimpleTamagochi
@@ -100,6 +106,10 @@ def main() -> None:
                 case _:
                     output = 'Неверная команда'
         except NotEnoughMoney as error:
+            output = f'Ошибка: {error}'
+        except NoFoodError as error:
+            output = f'Ошибка: {error}'
+        except NoMedicineError as error:
             output = f'Ошибка: {error}'
         except TamagochiIsGone as error:
             print(f'\nИгра окончена: {error}')
