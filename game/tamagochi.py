@@ -97,7 +97,7 @@ class SimpleTamagochi(AbstractTamagochi):
         self.hunger = 50
         self.hp = 100
         self.energy = 50
-        self.fatigue = 20
+        self.fatigue = 30
         self._sick = False
 
     def feed(self, food: Food) -> None:
@@ -107,11 +107,12 @@ class SimpleTamagochi(AbstractTamagochi):
         :param food: Объект еды.
         """
         self.hunger = max(0, self.hunger - food.satiety)
+        self.fatigue = max(0, self.fatigue - 2)
 
     def play(self) -> None:
-        """Играет с питомцем: тратит энергию, увеличивает усталость."""
+        """Играет с питомцем: тратит энергию, снижает усталость."""
         self.energy = max(0, self.energy - 10)
-        self.fatigue = min(100, self.fatigue + 10)
+        self.fatigue = max(0, self.fatigue - 5)
         self.hunger = min(100, self.hunger + 5)
 
     def rest(self) -> None:
@@ -160,10 +161,10 @@ class SimpleTamagochi(AbstractTamagochi):
         :return: True если все показатели в норме.
         """
         return (
-            self.hp >= 100
-            and self.energy >= 80
-            and self.hunger <= 20
-            and self.fatigue <= 20
+            self.hp >= 80
+            and self.energy >= 50
+            and self.hunger <= 30
+            and self.fatigue <= 30
             and not self._sick
         )
 
