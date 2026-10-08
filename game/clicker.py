@@ -3,6 +3,10 @@
 from abc import ABC, abstractmethod
 from random import randint
 
+# Константы для диапазона дохода за клик:
+MIN_INCOME = 5
+MAX_INCOME = 15
+
 
 class AbstractClicker(ABC):
     """Интерфейс для кликера."""
@@ -25,18 +29,19 @@ class AbstractClicker(ABC):
 
 
 class SimpleRandomClicker(AbstractClicker):
-    """Кликер с фиксированной случайной ставкой за клик."""
+    """Кликер со случайным доходом за каждый клик."""
 
     def __init__(self) -> None:
-        """Инициализирует кликер со случайной ставкой за клик."""
-        self._income_per_click = randint(5, 15)
-        self.clicks_count = 0
+        """Инициализирует кликер с нулевым доходом."""
+        self._income_per_click = 0
+        self._clicks_count = 0
 
     @property
     def income_per_click(self) -> int:
-        """Количество монет за один клик."""
+        """Количество монет, заработанных за последний клик."""
         return self._income_per_click
 
     def click(self) -> None:
-        """Фиксирует клик игрока."""
-        self.clicks_count += 1
+        """Фиксирует клик и генерирует случайный доход за него."""
+        self._clicks_count += 1
+        self._income_per_click = randint(MIN_INCOME, MAX_INCOME)

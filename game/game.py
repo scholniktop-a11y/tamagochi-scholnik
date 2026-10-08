@@ -1,6 +1,7 @@
 """Модуль с интерфейсом и реализацией класса игры."""
 
 from abc import ABC, abstractmethod
+from copy import copy
 
 from .clicker import AbstractClicker
 from .exceptions import (
@@ -122,13 +123,33 @@ class SimpleGame(AbstractGame):
         :param all_food: Список доступной еды.
         :param all_medicine: Список доступных лекарств.
         """
-        self.tamagochi = tamagochi
-        self.clicker = clicker
+        self._tamagochi = tamagochi
+        self._clicker = clicker
         self._all_food = all_food
         self._all_medicine = all_medicine
         self._food_bag: list[Food] = []
         self._medicine_bag: list[Medicine] = []
         self._coins = 0
+
+    @property
+    def tamagochi(self) -> AbstractTamagochi:
+        """Питомец (только для чтения)."""
+        return self._tamagochi
+
+    @property
+    def clicker(self) -> AbstractClicker:
+        """Кликер (только для чтения)."""
+        return self._clicker
+
+    @property
+    def available_food(self) -> list[Food]:
+        """Доступная для покупки еда."""
+        return self._all_food
+
+    @property
+    def available_medicine(self) -> list[Medicine]:
+        """Доступные для покупки лекарства."""
+        return self._all_medicine
 
     def _check_state(self) -> None:
         """
@@ -137,9 +158,9 @@ class SimpleGame(AbstractGame):
         :raises TamagochiIsGone: если питомец умер
         :raises GameWin: если питомец полностью счастлив
         """
-        if not self.tamagochi.is_alive():
+        if not self._tamagochi.is_alive():
             raise TamagochiIsGone('Питомец умер')
-        if self.tamagochi.is_happy():
+        if self._tamagochi.is_happy():
             raise GameWin('Питомец счастлив — вы победили!')
 
     def work(self) -> int:
@@ -148,90 +169,106 @@ class SimpleGame(AbstractGame):
 
         :return: Сколько монет заработано за клик.
         """
-        self.clicker.click()
-        income = self.clicker.income_per_click
+        self._clicker.click()
+        income = self._clicker.income_per_click
         self._coins += income
-        self.tamagochi.update()
+        self._tamagochi.update()
         self._check_state()
         return income
 
-    def buy_food(self) -> None:
+    def buy_food(self, index: int = 0) -> None:
         """
-        Купить первую доступную еду.
+        Купить еду по индексу из списка доступной.
 
+        :param index: Индекс еды в списке доступной.
         :raises NotEnoughMoney: если не хватает монет
+        :raises IndexError: если такого продукта нет
         """
         if not self._all_food:
             return
-        food = self._all_food[0]
+        if not 0 <= index < len(self._all_food):
+            raise IndexError('Такой еды нет в магазине')
+        food = self._all_food[index]
         if self._coins < food.price:
             raise NotEnoughMoney('Недостаточно монет для покупки еды')
         self._coins -= food.price
         self._food_bag.append(food)
-        self.tamagochi.update()
+        self._tamagochi.update()
         self._check_state()
 
-    def buy_medicine(self) -> None:
+    def buy_medicine(self, index: int = 0) -> None:
         """
-        Купить первое доступное лекарство.
+        Купить лекарство по индексу из списка доступных.
 
+        :param index: Индекс лекарства в списке доступных.
         :raises NotEnoughMoney: если не хватает монет
+        :raises IndexError: если такого лекарства нет
         """
         if not self._all_medicine:
             return
-        medicine = self._all_medicine[0]
+        if not 0 <= index < len(self._all_medicine):
+            raise IndexError('Такого лекарства нет в магазине')
+        medicine = self._all_medicine[index]
         if self._coins < medicine.price:
             raise NotEnoughMoney(
                 'Недостаточно монет для покупки лекарства'
             )
         self._coins -= medicine.price
-        self._medicine_bag.append(medicine)
-        self.tamagochi.update()
+        self._medicine_bag.append(copy(medicine))
+        self._tamagochi.update()
         self._check_state()
 
-    def feed_tamagochi(self) -> None:
+    def feed_tamagochi(self, index: int = 0) -> None:
         """
-        Покормить питомца первой едой из сумки.
+        Покормить питомца едой по индексу из сумки.
 
-        :raises NoFoodError: если в сумке нет еды
+        :param index: Индекс еды в сумке.
+        :raises NoFoodError: если сумка с едой пуста
+        :raises IndexError: если такой еды нет в сумке
         """
         if not self._food_bag:
             raise NoFoodError('Кормить нечем — сумка с едой пуста')
-        food = self._food_bag.pop(0)
-        self.tamagochi.feed(food)
-        self.tamagochi.update()
+        if not 0 <= index < len(self._food_bag):
+            raise IndexError('Такой еды нет в сумке')
+        food = self._food_bag.pop(index)
+        self._tamagochi.feed(food)
+        self._tamagochi.update()
         self._check_state()
 
-    def heal_tamagochi(self) -> None:
+    def heal_tamagochi(self, index: int = 0) -> None:
         """
-        Вылечить питомца первым непустым лекарством из сумки.
+        Вылечить питомца лекарством по индексу из сумки.
 
-        :raises NoMedicineError: если в сумке нет лекарств
+        :param index: Индекс лекарства в сумке.
+        :raises NoMedicineError: если сумка с лекарствами пуста
+        :raises IndexError: если такого лекарства нет в сумке
         """
         if not self._medicine_bag:
             raise NoMedicineError(
                 'Лечить нечем — сумка с лекарствами пуста'
             )
-        medicine = self._medicine_bag[0]
+        if not 0 <= index < len(self._medicine_bag):
+            raise IndexError('Такого лекарства нет в сумке')
+        medicine = self._medicine_bag[index]
         if medicine.is_empty():
-            self._medicine_bag.pop(0)
+            self._medicine_bag.pop(index)
             raise NoMedicineError('Лекарство закончилось')
-        self.tamagochi.heal(medicine)
+        self._tamagochi.heal(medicine)
         if medicine.is_empty():
-            self._medicine_bag.pop(0)
-        self.tamagochi.update()
+            self._medicine_bag.pop(index)
+        self._tamagochi.update()
         self._check_state()
 
     def rest_tamagochi(self) -> None:
         """Дать питомцу отдохнуть."""
-        self.tamagochi.rest()
-        self.tamagochi.update()
+        self._tamagochi.rest()
+        self._tamagochi.update()
         self._check_state()
 
     def play_with_tamagochi(self) -> None:
         """Поиграть с питомцем."""
-        self.tamagochi.play()
-        self.tamagochi.update()
+        self._tamagochi.play()
+        self._tamagochi.update()
         self._check_state()
 
     def get_status(self) -> dict[str, int]:
@@ -240,9 +277,9 @@ class SimpleGame(AbstractGame):
 
         :return: Словарь с характеристиками питомца и монетами.
         """
-        status = dict(self.tamagochi.status)
+        status = dict(self._tamagochi.status)
         status['coins'] = self._coins
-        status['is_sick'] = int(self.tamagochi.is_sick())
+        status['is_sick'] = int(self._tamagochi.is_sick())
         return status
 
     @property
